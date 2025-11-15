@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TikTok Downloader Premium</title>
+
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #0f0f12;
+        color: #fff;
+        display: flex;
+        justify-content: center;
+        padding: 30px;
+    }
+
+    .box {
+        background: #18181d;
+        padding: 25px;
+        width: 95%;
+        max-width: 550px;
+        border-radius: 20px;
+        box-shadow: 0 4px 30px rgba(0,0,0,0.4);
+        animation: fade .5s ease;
+        text-align: center;
+    }
+
+    @keyframes fade {
+        from { opacity: 0; transform: scale(.95); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    input {
+        width: 100%;
+        padding: 14px;
+        margin-top: 12px;
+        border-radius: 10px;
+        border: none;
+        font-size: 16px;
+    }
+
+    button {
+        width: 100%;
+        padding: 14px;
+        margin-top: 15px;
+        border: none;
+        border-radius: 10px;
+        font-size: 18px;
+        background: #ff2c55;
+        color: white;
+        cursor: pointer;
+    }
+
+    button:hover {
+        opacity: .85;
+    }
+
+    .download-btn {
+        display: block;
+        padding: 12px;
+        margin-top: 14px;
+        border-radius: 10px;
+        text-decoration: none;
+        color: white;
+        font-size: 17px;
+    }
+
+    .wm { background: #1da1f2; }
+    .nowm { background: #8b5cf6; }
+    .audio { background: #10b981; }
+
+    /* LOADING */
+    .loader {
+        border: 5px solid #333;
+        border-top: 5px solid #ff2c55;
+        border-radius: 50%;
+        width: 35px;
+        height: 35px;
+        animation: spin .7s linear infinite;
+        margin: 20px auto;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    img {
+        width: 100%;
+        border-radius: 12px;
+        margin-top: 20px;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="box">
+    <h2>TikTok Downloader Premium</h2>
+
+    <input id="url" placeholder="Tempel link TikTok di sini..." />
+
+    <button onclick="download()">Download</button>
+
+    <div id="status"></div>
+    <div id="result"></div>
+</div>
+
+
+<script>
+async function download() {
+    const url = document.getElementById("url").value.trim();
+    const status = document.getElementById("status");
+    const result = document.getElementById("result");
+
+    if (!url) {
+        alert("Masukkan link TikTok!");
+        return;
+    }
+
+    result.innerHTML = "";
+    status.innerHTML = `<div class='loader'></div>`;
+
+    try {
+        const response = await fetch(`/api/tiktok?url=${encodeURIComponent(url)}`);
+        const data = await response.json();
+
+        status.innerHTML = "";
+
+        if (data.error) {
+            result.innerHTML = `<p>Error: ${data.error}</p>`;
+            return;
+        }
+
+        const thumb = data.cover || data.thumbnail;
+        const video = data.video || data.videoUrl;
+        const nowm = data.nowm;
+        const audio = data.music?.playUrl;
+
+        if (thumb) {
+            result.innerHTML += `<img src="${thumb}">`;
+        }
+
+        if (video) {
+            result.innerHTML += `<a class="download-btn wm" href="${video}" target="_blank">Download MP4 (Watermark)</a>`;
+        }
+
+        if (nowm) {
+            result.innerHTML += `<a class="download-btn nowm" href="${nowm}" target="_blank">Download MP4 (No Watermark)</a>`;
+        }
+
+        if (audio) {
+            result.innerHTML += `<a class="download-btn audio" href="${audio}" target="_blank">Download MP3 / Audio</a>`;
+        }
+
+        if (!video && !nowm && !audio) {
+            result.innerHTML = "<p>Tidak ada file yang dapat diunduh.</p>";
+        }
+
+    } catch (e) {
+        status.innerHTML = "";
+        result.innerHTML = "<p>Gagal memproses video!</p>";
+    }
+}
+</script>
+
+</body>
+  </html>
